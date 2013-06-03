@@ -17,6 +17,7 @@ TEMPLATE = app
 LIBS += \
     ../lib/Ffmpeg/libavcodec.dll.a \
     ../lib/Ffmpeg/libavformat.dll.a \
+    ../lib/ffmpeg/libavutil.dll.a \
     ../lib/AVIMUXDLL.lib
 
 SOURCES += \

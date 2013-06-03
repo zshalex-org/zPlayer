@@ -7,6 +7,8 @@ extern "C" {
 #include "ffmpeg/libavformat/avformat.h"
 #include "ffmpeg/libavcodec/avcodec.h"
 #include "ffmpeg/libavutil/avutil.h"
+#include "ffmpeg/libavutil/mem.h"
+#include "ffmpeg/libavcodec/avcodec.h"
 }
 
 namespace Ui {
@@ -35,6 +37,8 @@ private:
     Ui::MainWindow *ui;
     AVFormatContext *m_formatCtx;
     AVPacket m_packet;
+    AVCodecContext *m_CodecCtx;
+    AVCodec *m_Codec;
 };
 
 #endif // MAINWINDOW_H

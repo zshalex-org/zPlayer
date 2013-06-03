@@ -6,11 +6,13 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    m_formatCtx(NULL)
+    m_formatCtx(NULL),
+    m_CodecCtx(NULL)
 {
     ui->setupUi(this);
     ui->tableWidget->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 
+//    avcodec_init();
     av_register_all();
     showInputFormat();
     showOutputFormat();
@@ -97,12 +99,19 @@ void MainWindow::on_readBtn_clicked()
 {
     if (m_formatCtx != NULL) {
         if (av_read_frame(m_formatCtx,&m_packet) == 0) {
-//            qDebug() << "read a frame success";
+            if (m_packet.stream_index == 0) {
+                qDebug() << m_CodecCtx->codec_id << m_packet.stream_index;
+                AVFrame *frame = avcodec_alloc_frame();
+                int got_picture_ptr = 0;
+                int res = avcodec_decode_video2(m_CodecCtx,frame,&got_picture_ptr,&m_packet);
 
-//            qDebug() << "stream index" << m_packet.stream_index;
-            qDebug() << "dts" << m_packet.dts;
-            qDebug() << "pts" << m_packet.pts;
-            qDebug() << "duration" << m_packet.duration;
+                if (res >= 0) {
+                    qDebug() << "decode success";
+                    av_free(frame);
+                } else {
+                    qDebug() << "decode error";
+                }
+            }
             av_free_packet(&m_packet);
         } else {
             qDebug() << "read a frame error";
@@ -124,6 +133,12 @@ void MainWindow::showStreamInfo()
     for (int i = 0; i < m_formatCtx->nb_streams; i++) {
         pCodec = avcodec_find_decoder(m_formatCtx->streams[i]->codec->codec_id);
         name = pCodec->name;
+
+        if (i == 0) {
+            m_CodecCtx = m_formatCtx->streams[i]->codec;
+            m_Codec = pCodec;
+            qDebug() << "avcodec_open" << avcodec_open(m_CodecCtx,m_Codec);
+        }
 
         if (m_formatCtx->streams[i]->avg_frame_rate.den == 0)
             frameRate = 0;
